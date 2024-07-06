@@ -1,7 +1,7 @@
 #ifndef __UDP_UTILS_H
 #define __UDP_UTILS_H
 
-#include "../utils.h"
+#include "../networking_utils.h"
 
 int createSocketUDP();
 
