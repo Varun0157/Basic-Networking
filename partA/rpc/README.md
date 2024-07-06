@@ -1,0 +1,1 @@
+Start-up the server with two ports as command line arguments. The first port represents the first player, which one client must connect to (again via a command line argument), and the second represents the second player, which the second client must connect to. Then, follow the instructions received in the terminal of the given clients. 

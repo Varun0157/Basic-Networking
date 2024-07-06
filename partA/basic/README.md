@@ -1,0 +1,1 @@
+Startup either server with a command line argument representing the port, then start-up the corresponding client on the same port. 

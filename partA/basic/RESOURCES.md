@@ -1,0 +1,4 @@
+- The same resources as shared in the MP website were used. 
+	- https://github.com/nikhilroxtomar/UDP-Client-Server-implementation-in-C
+	- https://github.com/nikhilroxtomar/TCP-Client-Server-Implementation-in-C
+	- Tutorial doc shared in MP page
