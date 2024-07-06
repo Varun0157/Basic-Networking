@@ -1,11 +1,4 @@
-#include <arpa/inet.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-
-#include "headers.h"
+#include "tcp_utils.h"
 
 #define BUF_SIZE 1024
 

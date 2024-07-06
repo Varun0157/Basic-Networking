@@ -6,7 +6,7 @@
 void closeClientSocket(int sock);
 
 int createSocketTCP();
-void sendMessage(int socket, char buffer[BUF_SIZE]);
-void recvMessage(int socket, char buffer[BUF_SIZE]);
+int sendMessage(int socket, char buffer[BUF_SIZE]);
+int recvMessage(int socket, char buffer[BUF_SIZE]);
 
 #endif

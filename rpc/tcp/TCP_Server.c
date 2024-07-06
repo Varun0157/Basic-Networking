@@ -14,7 +14,8 @@ char* getMove(int move) {
         return "scissors";
 }
 
-char* getResult(int res, int client) {
+char* getResult(int move1, int move2, int client) {
+    int res = (move1 - move2 + 3) % 3;
     if (res == 0) return "\033[1;33mDRAW!\033[0m";
 
     if (client == 1) {
@@ -32,7 +33,8 @@ char* getResult(int res, int client) {
     }
 }
 
-char* getServerResult(int res) {
+char* getServerResult(int move1, int move2) {
+    int res = (move1 - move2 + 3) % 3;
     if (res == 0)
         return "DRAW";
     else if (res == 1)
@@ -44,13 +46,13 @@ char* getServerResult(int res) {
 void closeSockets(int server_socket1, int server_socket2, int client_sock1,
                   int client_sock2) {
     if (server_socket1 >= 0 && closeSocket(server_socket1) == 0)
-        printf("[+] closed first server socket");
+        printf("[+] closed first server socket\n");
     if (server_socket2 >= 0 && closeSocket(server_socket2) == 0)
-        printf("[+] closed second server socket");
+        printf("[+] closed second server socket\n");
     if (client_sock1 >= 0 && closeSocket(client_sock1) == 0)
-        printf("[+] closed first client socket");
+        printf("[+] closed first client socket\n");
     if (client_sock2 >= 0 && closeSocket(client_sock2) == 0)
-        printf("[+] closed second client socket");
+        printf("[+] closed second client socket\n");
 }
 
 void bindToPort(struct sockaddr_in addr, int socket, int port, int otherSocket) {
@@ -122,126 +124,76 @@ int main(int argc, char** argv) {
     const int client_sock2 = acceptClientConnection(port2, server_sock2, server_sock1);
     printf(TCBGRN "[+] client 2 Connected\n" RESET);
 
-    while (1) {
+    int playGame = 1;
+    while (playGame) {
         printLines();
 
-        memset(buffer, '\0', BUF_SIZE);
-        if (recv(client_sock1, buffer, sizeof(buffer), 0) == -1) {
-            perror(TCBRED "recv in client socket 1" RESET);
-            close(server_sock1);
-            close(server_sock2);
-            close(client_sock1);
-            close(client_sock2);
+        if (recvMessage(client_sock1, buffer) == 1) {
+            closeSockets(server_sock1, server_sock2, client_sock1, client_sock2);
             exit(1);
         }
 
-        int move1 = atoi(buffer);
-        printf(TCBBLU "Client 1 played: %s\n" RESET, getMove(move1));
+        const int move1 = atoi(buffer);
+        printf(TCBBLU "client 1 played: %s\n" RESET, getMove(move1));
 
-        memset(buffer, '\0', BUF_SIZE);
-        if (recv(client_sock2, buffer, sizeof(buffer), 0) == -1) {
-            perror(TCBRED "recv in client socket 2" RESET);
-            close(server_sock1);
-            close(server_sock2);
-            close(client_sock1);
-            close(client_sock2);
+        if (recvMessage(client_sock2, buffer) == 1) {
+            closeSockets(server_sock1, server_sock2, client_sock1, client_sock2);
             exit(1);
         }
 
-        int move2 = atoi(buffer);
-        printf(TCBBLU "Client 2 played: %s\n", getMove(move2));
+        const int move2 = atoi(buffer);
+        printf(TCBBLU "client 2 played: %s\n" RESET, getMove(move2));
 
-        int res = (move1 - move2 + 3) % 3;
-        printf("%s\n", getServerResult(res));
+        printf("%s\n", getServerResult(move1, move2));
 
         memset(buffer, '\0', BUF_SIZE);
         snprintf(buffer, BUF_SIZE,
                  "%s\nPlayer 2 played %s\nEnter 0 to stop, or 1 to continue: ",
-                 getResult(res, 1), getMove(move2));
-
-        if (send(client_sock1, buffer, strlen(buffer), 0) == -1) {
-            perror(TCBRED "send error to client sock 1" RESET);
-            close(server_sock1);
-            close(server_sock2);
-            close(client_sock1);
-            close(client_sock2);
+                 getResult(move1, move2, 1), getMove(move2));
+        if (sendMessage(client_sock1, buffer) == 1) {
+            closeSockets(server_sock1, server_sock2, client_sock1, client_sock2);
             exit(1);
         }
 
         memset(buffer, '\0', BUF_SIZE);
         snprintf(buffer, BUF_SIZE,
                  "%s\nPlayer 1 played %s\nEnter 0 to stop, or 1 to continue: ",
-                 getResult(res, 2), getMove(move1));
-
-        if (send(client_sock2, buffer, strlen(buffer), 0) == -1) {
-            perror(TCBRED "send error to client sock 2" RESET);
-            close(server_sock1);
-            close(server_sock2);
-            close(client_sock1);
-            close(client_sock2);
+                 getResult(move1, move2, 2), getMove(move1));
+        if (sendMessage(client_sock2, buffer) == 1) {
+            closeSockets(server_sock1, server_sock2, client_sock1, client_sock2);
             exit(1);
         }
+
+        if (recvMessage(client_sock1, buffer) == 1) {
+            closeSockets(server_sock1, server_sock2, client_sock1, client_sock2);
+            exit(1);
+        }
+        const int cont1 = atoi(buffer);
+
+        if (recvMessage(client_sock2, buffer) == 1) {
+            closeSockets(server_sock1, server_sock2, client_sock1, client_sock2);
+            exit(1);
+        }
+        const int cont2 = atoi(buffer);
 
         memset(buffer, '\0', BUF_SIZE);
-        if (recv(client_sock1, buffer, sizeof(buffer), 0) == -1) {
-            perror(TCBRED "recv in client socket 1" RESET);
-            close(server_sock1);
-            close(server_sock2);
-            close(client_sock1);
-            close(client_sock2);
+        playGame = cont1 && cont2;
+        snprintf(buffer, BUF_SIZE, "%d", playGame ? 1 : 0);
+
+        if (sendMessage(client_sock1, buffer) == 1) {
+            closeSockets(server_sock1, server_sock2, client_sock1, client_sock2);
             exit(1);
         }
 
-        int cont1 = atoi(buffer);
-
-        memset(buffer, '\0', BUF_SIZE);
-        if (recv(client_sock2, buffer, sizeof(buffer), 0) == -1) {
-            perror(TCBRED "recv in client socket 2" RESET);
-            close(server_sock1);
-            close(server_sock2);
-            close(client_sock1);
-            close(client_sock2);
-            exit(1);
-        }
-
-        int cont2 = atoi(buffer);
-
-        memset(buffer, '\0', BUF_SIZE);
-        int cont = cont1 && cont2;
-        if (cont) {
-            snprintf(buffer, BUF_SIZE, "%d", 1);
-        } else {
-            snprintf(buffer, BUF_SIZE, "%d", 0);
-        }
-
-        if (send(client_sock1, buffer, strlen(buffer), 0) == -1) {
-            perror(TCBRED "send error to client sock 1" RESET);
-            close(server_sock1);
-            close(server_sock2);
-            close(client_sock1);
-            close(client_sock2);
-            exit(1);
-        }
-
-        if (send(client_sock2, buffer, strlen(buffer), 0) == -1) {
-            perror(TCBRED "send error to client sock 2" RESET);
-            close(server_sock1);
-            close(server_sock2);
-            close(client_sock1);
-            close(client_sock2);
+        if (sendMessage(client_sock2, buffer) == 1) {
+            closeSockets(server_sock1, server_sock2, client_sock1, client_sock2);
             exit(1);
         }
 
         printLines();
-        if (!cont) break;
     }
 
-    close(client_sock1);
-    close(client_sock2);
-    printf(TCBGRN "[+]Clients Disconnecetd\n\n" RESET);
-
-    close(server_sock1);
-    close(server_sock2);
+    closeSockets(server_sock1, server_sock2, client_sock1, client_sock2);
 
     return 0;
 }
