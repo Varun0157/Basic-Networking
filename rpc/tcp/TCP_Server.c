@@ -1,13 +1,4 @@
-#include <arpa/inet.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-
-#include "headers.h"
-
-#define BUF_SIZE 1024
+#include "tcp_utils.h"
 
 void printLines() {
     for (int i = 0; i < 10; i++) printf("-");
@@ -50,122 +41,86 @@ char* getServerResult(int res) {
         return "CLIENT 2 WINS";
 }
 
+void closeSockets(int server_socket1, int server_socket2, int client_sock1,
+                  int client_sock2) {
+    if (server_socket1 >= 0 && closeSocket(server_socket1) == 0)
+        printf("[+] closed first server socket");
+    if (server_socket2 >= 0 && closeSocket(server_socket2) == 0)
+        printf("[+] closed second server socket");
+    if (client_sock1 >= 0 && closeSocket(client_sock1) == 0)
+        printf("[+] closed first client socket");
+    if (client_sock2 >= 0 && closeSocket(client_sock2) == 0)
+        printf("[+] closed second client socket");
+}
+
+void bindToPort(struct sockaddr_in addr, int socket, int port, int otherSocket) {
+    if (bind(socket, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+        char error[BUF_SIZE];
+        snprintf(error, BUF_SIZE, TCBRED "[-] bind error on port %d" RESET, port);
+        perror(error);
+
+        closeSockets(socket, otherSocket, -1, -1);
+        exit(1);
+    }
+}
+
+void listenForConnections(int port, int socket, int otherSocket) {
+    if (listen(socket, 5) == -1) {
+        char error[BUF_SIZE];
+        snprintf(error, BUF_SIZE, TCBRED "[-] listen error on port %d" RESET, port);
+        perror(error);
+
+        closeSockets(socket, otherSocket, -1, -1);
+        exit(1);
+    }
+}
+
+int acceptClientConnection(int port, int serverSock, int otherSock) {
+    struct sockaddr_in client_addr;
+    socklen_t addr_size = sizeof(client_addr);
+    int client_sock;
+    if ((client_sock = accept(serverSock, (struct sockaddr*)&client_addr, &addr_size)) ==
+        -1) {
+        char error[BUF_SIZE];
+        snprintf(error, BUF_SIZE, TCBRED "[-] accept error on port %d" RESET, port);
+        perror(error);
+
+        closeSockets(serverSock, otherSock, -1, -1);
+        exit(1);
+    }
+
+    return client_sock;
+}
+
 int main(int argc, char** argv) {
     if (argc != 3) {
         printf("Usage: %s <port1> <port2>", argv[0]);
         exit(1);
     }
 
-    char* ip = "127.0.0.1";
-    char* endPtr;
-    long portLong = strtol(argv[1], &endPtr, 10);
-    if (*endPtr != '\0' || portLong < 0 || portLong > USHRT_MAX) {
-        printf(TCBRED
-               "Entered port %s is invalid. Enter an integer in [0, 65535]\n" RESET,
-               argv[1]);
-        exit(1);
-    }
-    int port1 = (int)portLong;
+    const char* ip = IP_ADDR;
+    const int port1 = getPort(argv[1]), port2 = getPort(argv[2]);
 
-    char* endPtr2;
-    long portLong2 = strtol(argv[2], &endPtr2, 10);
-    if (*endPtr2 != '\0' || portLong2 < 0 || portLong2 > USHRT_MAX) {
-        printf(TCBRED
-               "Entered port %s is invalid. Enter an integer in [0, 65535]\n" RESET,
-               argv[2]);
-        exit(1);
-    }
-    int port2 = (int)portLong2;
+    const int server_sock1 = createSocketTCP(), server_sock2 = createSocketTCP();
 
-    int server_sock1, server_sock2;
-    struct sockaddr_in server_addr1, server_addr2;
+    struct sockaddr_in server_addr1 = getSocketAddress(ip, port1),
+                       server_addr2 = getSocketAddress(ip, port2);
 
-    server_sock1 = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_sock1 < 0) {
-        perror(TCBRED "[-]Socket Error" RESET);
-        exit(1);
-    }
+    bindToPort(server_addr1, server_sock1, port1, server_sock2);
+    bindToPort(server_addr2, server_sock2, port2, server_sock1);
+    printf(TCBGRN "[+] bound to ports %d and %d\n" RESET, port1, port2);
 
-    server_sock2 = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_sock2 < 0) {
-        perror(TCBRED "[-]Socket Error" RESET);
-        close(server_sock1);
-        exit(1);
-    }
+    listenForConnections(port1, server_sock1, server_sock2);
+    listenForConnections(port2, server_sock2, server_sock1);
+    printf(TCBGRN "[+] listening for connections\n" RESET);
 
-    printf(TCBGRN "[+]TCP Server Socket created.\n" RESET);
-    printf(TCNGRN "Port selected: %d and %d\n" RESET, port1, port2);
-
-    memset(&server_addr1, '\0', sizeof(server_addr1));
-    server_addr1.sin_family = AF_INET;
-    server_addr1.sin_port = htons(port1);
-    server_addr1.sin_addr.s_addr = inet_addr(ip);
-
-    memset(&server_addr2, '\0', sizeof(server_addr2));
-    server_addr2.sin_family = AF_INET;
-    server_addr2.sin_port = htons(port2);
-    server_addr2.sin_addr.s_addr = inet_addr(ip);
-
-    if (bind(server_sock1, (struct sockaddr*)&server_addr1, sizeof(server_addr1)) < 0) {
-        char err[BUF_SIZE];
-        snprintf(err, BUF_SIZE, TCBRED "[-]Bind Error on port %d" RESET, port1);
-        perror(err);
-        close(server_sock1);
-        close(server_sock2);
-        exit(1);
-    }
-
-    if (bind(server_sock2, (struct sockaddr*)&server_addr2, sizeof(server_addr2)) < 0) {
-        char err[BUF_SIZE];
-        snprintf(err, BUF_SIZE, TCBRED "[-]Bind Error on port %d" RESET, port2);
-        perror(err);
-        close(server_sock1);
-        close(server_sock2);
-        exit(1);
-    }
-
-    printf(TCBGRN "[+]Bound to the port numbers %d and %d\n" RESET, port1, port2);
-
-    if (listen(server_sock1, 5) == -1) {
-        perror(TCBRED "listen error in first socket" RESET);
-        close(server_sock1);
-        close(server_sock2);
-        exit(1);
-    }
-
-    if (listen(server_sock2, 5) == -1) {
-        perror(TCBRED "listen error in second socket" RESET);
-        close(server_sock1);
-        close(server_sock2);
-        exit(1);
-    }
-    printf(TCBGRN "Listening...\n" RESET);
-
-    socklen_t addr_size;
     char buffer[BUF_SIZE];
 
-    addr_size = sizeof(server_addr1);
-    int client_sock1;
-    if ((client_sock1 =
-             accept(server_sock1, (struct sockaddr*)&server_addr1, &addr_size)) == -1) {
-        perror(TCBRED "accept" RESET);
-        close(server_sock1);
-        close(server_sock2);
-        exit(1);
-    }
-    printf(TCBGRN "[+]Client 1 Connected\n" RESET);
+    const int client_sock1 = acceptClientConnection(port1, server_sock1, server_sock2);
+    printf(TCBGRN "[+] client 1 Connected\n" RESET);
 
-    addr_size = sizeof(server_addr2);
-    int client_sock2;
-    if ((client_sock2 =
-             accept(server_sock2, (struct sockaddr*)&server_addr2, &addr_size)) == -1) {
-        perror(TCBRED "accept" RESET);
-        close(server_sock1);
-        close(server_sock2);
-        close(client_sock1);
-        exit(1);
-    }
-    printf(TCBGRN "[+]Client 2 Connected\n" RESET);
+    const int client_sock2 = acceptClientConnection(port2, server_sock2, server_sock1);
+    printf(TCBGRN "[+] client 2 Connected\n" RESET);
 
     while (1) {
         printLines();
