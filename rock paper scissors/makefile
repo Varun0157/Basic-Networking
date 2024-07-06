@@ -1,4 +1,4 @@
-CFILES=utils.c
+CFILES=networking_utils.c game_utils.c
 TCP_FILES=${CFILES} tcp/tcp_utils.c
 UDP_FILES=${CFILES} udp/udp_utils.c
 

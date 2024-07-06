@@ -1,9 +1,5 @@
 #include "tcp_utils.h"
 
-void closeClientSocket(int sock) {
-    if (closeSocket(sock) == 0) printf(TCBGRN "[+] socket closed\n" RESET);
-}
-
 int createSocketTCP() {
     const int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) {

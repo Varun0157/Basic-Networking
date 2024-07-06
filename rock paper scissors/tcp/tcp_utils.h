@@ -1,7 +1,7 @@
 #ifndef __TCP_UTILS_H
 #define __TCP_UTILS_H
 
-#include "../utils.h"
+#include "../networking_utils.h"
 
 void closeClientSocket(int sock);
 
