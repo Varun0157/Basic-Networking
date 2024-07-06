@@ -1,48 +1,35 @@
-#include "../utils.h"
+#include "udp_utils.h"
+
+struct sockaddr_in sendMessageToServer(int sock, struct sockaddr_in addr) {
+    char buffer[BUF_SIZE];
+    memset(buffer, '\0', BUF_SIZE);
+    strcpy(buffer, TCBBLU "THIS IS UDP CLIENT" RESET);
+    printf("sendto: %s\n", buffer);
+
+    return sendMessage(sock, addr, buffer);
+}
+
+void receiveMessageFromServer(int sock, struct sockaddr_in addr) {
+    char buffer[BUF_SIZE];
+    memset(buffer, '\0', BUF_SIZE);
+    struct sockaddr_in _addr = receiveMessage(sock, addr, buffer);
+
+    printf("recvfrom: %s\n", buffer);
+}
 
 int main(int argc, const char** argv) {
     const char* ip = IP_ADDR;
     const int port = getPort(argc, argv);
 
-    struct sockaddr_in addr;
     char buffer[BUF_SIZE];
-    socklen_t addr_size;
 
-    int sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sock < 0) {
-        perror(TCBRED "Socket" RESET);
-        close(sock);
-        exit(1);
-    }
+    const int sock = createSocketUDP();
+    struct sockaddr_in client_addr = getSocketAddress(ip, port);
 
-    printf(TCBGRN "Port selected: %d\n" RESET, port);
+    client_addr = sendMessageToServer(sock, client_addr);
+    receiveMessageFromServer(sock, client_addr);
 
-    memset(&addr, '\0', sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = inet_addr(ip);
+    closeSocketUDP(sock);
 
-    memset(buffer, '\0', BUF_SIZE);
-    strcpy(buffer, TCBBLU "THIS IS UDP CLIENT" RESET);
-    if (sendto(sock, buffer, BUF_SIZE, 0, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-        perror(TCBRED "sendto" RESET);
-        close(sock);
-        exit(1);
-    }
-    printf("[+] sendto: %s\n", buffer);
-
-    memset(buffer, '\0', BUF_SIZE);
-    addr_size = sizeof(addr);
-    if (recvfrom(sock, buffer, BUF_SIZE, 0, (struct sockaddr*)&addr, &addr_size) < 0) {
-        perror(TCBRED "recvfrom" RESET);
-        close(sock);
-        exit(1);
-    }
-    printf("[+] recvfrom: %s\n", buffer);
-
-    if (close(sock) < 0) {
-        perror("close");
-        exit(1);
-    }
     return 0;
 }
