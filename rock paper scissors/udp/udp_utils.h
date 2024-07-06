@@ -6,8 +6,10 @@
 int createSocketUDP();
 
 int bindToPort(int sock, struct sockaddr_in server_addr);
-int receiveMessage(int sock, struct sockaddr_in* addr, char buffer[BUF_SIZE]);
-int sendMessage(int sock, struct sockaddr_in* addr, char buffer[BUF_SIZE]);
+int receiveMessage(int sock, struct sockaddr_in* addr, socklen_t* addr_size,
+                   char buffer[BUF_SIZE]);
+int sendMessage(int sock, struct sockaddr_in* addr, socklen_t* addr_size,
+                char buffer[BUF_SIZE]);
 
 void closeSocketUDP(int socket);
 

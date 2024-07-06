@@ -24,17 +24,19 @@ int bindToPort(int sock, struct sockaddr_in server_addr) {
     return 0;
 }
 
-int receiveMessage(int sock, struct sockaddr_in* addr, char buffer[BUF_SIZE]) {
+int receiveMessage(int sock, struct sockaddr_in* addr, socklen_t* addr_size,
+                   char buffer[BUF_SIZE]) {
     memset(buffer, '\0', BUF_SIZE);
-    socklen_t addr_size = sizeof(addr);
-    if (recvfrom(sock, buffer, BUF_SIZE, 0, addr, &addr_size) < 0) {
+    if (recvfrom(sock, buffer, BUF_SIZE, 0, (struct sockaddr*)addr, addr_size) < 0) {
         perror(TCBRED "recvfrom" RESET);
-        exit(1);
+        return 1;
     }
+    return 0;
 }
 
-int sendMessage(int sock, struct sockaddr_in* addr, char buffer[BUF_SIZE]) {
-    if (sendto(sock, buffer, BUF_SIZE, 0, addr, sizeof(addr)) < 0) {
+int sendMessage(int sock, struct sockaddr_in* addr, socklen_t* addr_size,
+                char buffer[BUF_SIZE]) {
+    if (sendto(sock, buffer, BUF_SIZE, 0, (struct sockaddr*)addr, *addr_size) < 0) {
         perror(TCBRED "sendto" RESET);
         return 1;
     }

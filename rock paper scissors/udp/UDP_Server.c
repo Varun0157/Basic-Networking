@@ -21,6 +21,7 @@ int main(int argc, char** argv) {
 
     struct sockaddr_in server_addr1 = getSocketAddress(ip, port1),
                        server_addr2 = getSocketAddress(ip, port2);
+    socklen_t addr1_len = sizeof(server_addr1), addr2_len = sizeof(server_addr2);
 
     if (bindToPort(sock1, server_addr1) != 0) {
         closeSockets(sock1, sock2);
@@ -36,7 +37,7 @@ int main(int argc, char** argv) {
 
     int keepPlaying = 1;
     while (keepPlaying) {
-        if (receiveMessage(sock1, &server_addr1, buffer) != 0) {
+        if (receiveMessage(sock1, &server_addr1, &addr1_len, buffer) != 0) {
             closeSockets(sock1, sock2);
             exit(1);
         }
@@ -44,7 +45,7 @@ int main(int argc, char** argv) {
         const int move1 = atoi(buffer);
         printf(TCBBLU "Client 1 played: %s\n" RESET, getMove(move1));
 
-        if (receiveMessage(sock2, &server_addr2, buffer) != 0) {
+        if (receiveMessage(sock2, &server_addr2, &addr2_len, buffer) != 0) {
             closeSockets(sock1, sock2);
             exit(1);
         }
@@ -58,7 +59,7 @@ int main(int argc, char** argv) {
         snprintf(buffer, BUF_SIZE,
                  "%s\nPlayer 2 played %s\nEnter 0 to stop, or 1 to continue: ",
                  getResult(move1, move2, 1), getMove(move2));
-        if (sendMessage(sock1, &server_addr1, buffer) != 0) {
+        if (sendMessage(sock1, &server_addr1, &addr1_len, buffer) != 0) {
             closeSockets(sock1, sock2);
             exit(1);
         }
@@ -67,19 +68,19 @@ int main(int argc, char** argv) {
         snprintf(buffer, BUF_SIZE,
                  "%s\nPlayer 1 played %s\nEnter 0 to stop, or 1 to continue: ",
                  getResult(move1, move2, 2), getMove(move1));
-        if (sendMessage(sock2, &server_addr2, buffer) != 0) {
+        if (sendMessage(sock2, &server_addr2, &addr2_len, buffer) != 0) {
             closeSockets(sock1, sock2);
             exit(1);
         }
 
-        if (receiveMessage(sock1, &server_addr1, buffer) != 0) {
+        if (receiveMessage(sock1, &server_addr1, &addr2_len, buffer) != 0) {
             closeSockets(sock1, sock2);
             exit(1);
         }
 
         const int cont1 = atoi(buffer);
 
-        if (receiveMessage(sock2, &server_addr2, buffer) != 0) {
+        if (receiveMessage(sock2, &server_addr2, &addr2_len, buffer) != 0) {
             closeSockets(sock1, sock2);
             exit(1);
         }
@@ -90,12 +91,12 @@ int main(int argc, char** argv) {
         keepPlaying = cont1 && cont2;
         snprintf(buffer, BUF_SIZE, "%d", keepPlaying ? 1 : 0);
 
-        if (sendMessage(sock1, &server_addr1, buffer) != 0) {
+        if (sendMessage(sock1, &server_addr1, &addr1_len, buffer) != 0) {
             closeSockets(sock1, sock2);
             exit(1);
         }
 
-        if (sendMessage(sock2, &server_addr2, buffer) != 0) {
+        if (sendMessage(sock2, &server_addr2, &addr2_len, buffer) != 0) {
             closeSockets(sock1, sock2);
             exit(1);
         }
