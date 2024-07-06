@@ -1,9 +1,9 @@
 #include "tcp_utils.h"
 
 void closeSockets(int clientSock, int serverSock) {
-    if (serverSock >= 0 && closeSocket(clientSock) >= 0)
+    if (serverSock >= 0 && closeSocket(clientSock) == 0)
         printf(TCBGRN "[+] client socket closed\n" RESET);
-    if (serverSock >= 0 && closeSocket(serverSock) >= 0)
+    if (serverSock >= 0 && closeSocket(serverSock) == 0)
         printf(TCBGRN "[+] server socket closed\n" RESET);
 }
 

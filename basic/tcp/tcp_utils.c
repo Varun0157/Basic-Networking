@@ -1,7 +1,7 @@
 #include "tcp_utils.h"
 
 void closeClientSocket(int sock) {
-    if (closeSocket >= 0) printf(TCBGRN "[+] socket closed\n" RESET);
+    if (closeSocket == 0) printf(TCBGRN "[+] socket closed\n" RESET);
 }
 
 int createSocketTCP() {
