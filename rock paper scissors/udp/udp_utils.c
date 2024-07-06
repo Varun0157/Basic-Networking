@@ -15,37 +15,29 @@ int createSocketUDP() {
     return sock;
 }
 
-void bindToPort(int sock, struct sockaddr_in server_addr) {
+int bindToPort(int sock, struct sockaddr_in server_addr) {
     if (bind(sock, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
         perror(TCBRED "[-]Bind Error" RESET);
-        closeSocketUDP(sock);
-        exit(1);
+        return 1;
     }
 
-    printf(TCBGRN "Listening...\n" RESET);
+    return 0;
 }
 
-struct sockaddr_in receiveMessage(int sock, struct sockaddr_in addr,
-                                  char buffer[BUF_SIZE]) {
-    socklen_t addr_size;
-
+int receiveMessage(int sock, struct sockaddr_in* addr, char buffer[BUF_SIZE]) {
     memset(buffer, '\0', BUF_SIZE);
-    addr_size = sizeof(addr);
-    if (recvfrom(sock, buffer, BUF_SIZE, 0, (struct sockaddr*)&addr, &addr_size) < 0) {
+    socklen_t addr_size = sizeof(addr);
+    if (recvfrom(sock, buffer, BUF_SIZE, 0, addr, &addr_size) < 0) {
         perror(TCBRED "recvfrom" RESET);
-        closeSocket(sock);
         exit(1);
     }
-
-    return addr;
 }
 
-struct sockaddr_in sendMessage(int sock, struct sockaddr_in addr, char buffer[BUF_SIZE]) {
-    if (sendto(sock, buffer, BUF_SIZE, 0, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+int sendMessage(int sock, struct sockaddr_in* addr, char buffer[BUF_SIZE]) {
+    if (sendto(sock, buffer, BUF_SIZE, 0, addr, sizeof(addr)) < 0) {
         perror(TCBRED "sendto" RESET);
-        closeSocket(sock);
-        exit(1);
+        return 1;
     }
 
-    return addr;
+    return 0;
 }

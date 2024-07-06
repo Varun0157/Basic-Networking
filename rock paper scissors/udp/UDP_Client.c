@@ -22,9 +22,15 @@ int main(int argc, char** argv) {
         memset(buffer, '\0', BUF_SIZE);
         snprintf(buffer, BUF_SIZE, "%d", input);
         printf(TCBBLU "Client: %s\n" RESET, buffer);
-        addr = sendMessage(sock, addr, buffer);
+        if (sendMessage(sock, &addr, buffer) != 0) {
+            closeSocketUDP(sock);
+            exit(1);
+        }
 
-        addr = receiveMessage(sock, addr, buffer);
+        if (receiveMessage(sock, &addr, buffer) != 0) {
+            closeSocketUDP(sock);
+            exit(1);
+        }
         printf(TCBYEL "Server: %s" RESET, buffer);
 
         int keepPlaying;
@@ -33,9 +39,15 @@ int main(int argc, char** argv) {
         memset(buffer, '\0', BUF_SIZE);
         snprintf(buffer, BUF_SIZE, "%d", keepPlaying == 0 ? 0 : 1);
         printf(TCBBLU "Client: %s\n" RESET, buffer);
-        addr = sendMessage(sock, addr, buffer);
+        if (sendMessage(sock, &addr, buffer) != 0) {
+            closeSocketUDP(sock);
+            exit(1);
+        }
 
-        addr = receiveMessage(sock, addr, buffer);
+        if (receiveMessage(sock, &addr, buffer) != 0) {
+            closeSocketUDP(sock);
+            exit(1);
+        }
         const int continuePlaying = buffer[0] == '0' ? 0 : 1;
         printf("Server: %s\n", !continuePlaying ? "End" : "Continue");
         printLines();
