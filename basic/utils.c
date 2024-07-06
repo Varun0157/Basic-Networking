@@ -16,3 +16,20 @@ int getPort(int argc, const char** argv) {
 
     return (int)port;
 }
+
+struct sockaddr_in getSocketAddress(const char* ip, const int port) {
+    struct sockaddr_in addr;
+    memset(&addr, '\0', sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(port);
+    addr.sin_addr.s_addr = inet_addr(ip);
+
+    return addr;
+}
+
+int closeSocket(int sock) {
+    if (close(sock) >= 0) return 0;
+
+    perror("[-] close");
+    return 1;
+}

@@ -6,6 +6,9 @@
 #define BUF_SIZE 1024
 #define IP_ADDR "127.0.0.1"
 
-int getPort(int argc, const char **argv);
+int closeSocket(int sock);
+
+int getPort(int argc, const char** argv);
+struct sockaddr_in getSocketAddress(const char* ip, const int port);
 
 #endif

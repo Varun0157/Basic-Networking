@@ -1,6 +1,13 @@
 #ifndef __HEADERS_H
 #define __HEADERS_H
 
+#include <arpa/inet.h>
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
 // https://gist.github.com/kanglicheng/e6a7794dbf847fe1a210a2e1fa4ddaf7
 #define RESET "\033[0m"
 #define TCDEF "\033[0;39m"
