@@ -1,10 +1,12 @@
 CFILES=utils.c
+TCP_FILES=${CFILES} tcp/tcp_utils.c
+UDP_FILES=${CFILES} udp_files.c
 
-main: TCP UDP
+main: TCP
 
 TCP:
-	gcc TCP_Client.c ${CFILES} -o tcp_client
-	gcc TCP_Server.c ${CFILES} -o tcp_server
+	gcc tcp/TCP_Client.c ${TCP_FILES} -o tcp_client
+	gcc tcp/TCP_Server.c ${TCP_FILES} -o tcp_server
 	
 UDP:
 	gcc UDP_Client.c ${CFILES} -o udp_client

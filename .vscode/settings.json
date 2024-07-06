@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "utils.h": "c",
-        "headers.h": "c"
+        "headers.h": "c",
+        "tcp_utils.h": "c"
     }
 }

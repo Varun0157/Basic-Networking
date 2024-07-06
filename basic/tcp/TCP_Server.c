@@ -65,5 +65,7 @@ int main(int argc, const char** argv) {
         exit(1);
     }
 
+    closeSockets(client_sock, server_sock);
+
     return 0;
 }
