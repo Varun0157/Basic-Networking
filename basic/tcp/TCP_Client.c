@@ -14,7 +14,7 @@ void sendMessageToServer(int sock) {
     memset(buffer, '\0', BUF_SIZE);
     strcpy(buffer, TCBBLU "message from TCP client\n" RESET);
     printf("send: %s", buffer);
-    
+
     sendMessage(sock, buffer);
 }
 
@@ -30,7 +30,7 @@ int main(int argc, const char** argv) {
 
     const int sock = createSocketTCP();
     struct sockaddr_in addr = getSocketAddress(ip, port);
-    
+
     connectToServer(sock, addr);
 
     sendMessageToServer(sock);
