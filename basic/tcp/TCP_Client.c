@@ -30,6 +30,7 @@ int main(int argc, const char** argv) {
 
     const int sock = createSocketTCP();
     struct sockaddr_in addr = getSocketAddress(ip, port);
+    
     connectToServer(sock, addr);
 
     sendMessageToServer(sock);
