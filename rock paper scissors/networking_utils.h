@@ -9,7 +9,6 @@
 int closeSocket(int sock);
 
 int getPort(char* portStr);
-int getPorts(int argc, const char** argv);
 struct sockaddr_in getSocketAddress(const char* ip, const int port);
 
 #endif

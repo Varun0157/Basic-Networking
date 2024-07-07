@@ -4,6 +4,8 @@ A set of 3 independent projects to gain a foundation on networking concepts.
 
 ## 1. basic
 
+An implementation of a simple client-server model for both TCP and UDP protocols.
+
 ### Instructions
 
 ```bash
@@ -65,8 +67,4 @@ In others, run the two clients
 Implementing _some_ `TCP` functionality from "scratch", using `UDP`. The functionalities implemented are:
 1. **Data Sequencing**: the sender divides the data into smaller chunks of fixed size, each of which is assigned  number. After the receiver has all the data, it is aggregated in the correct order. 
 2. **Retransmissions**: The receiver must send an ACK packet for every data chunk received. If the sender doesn't receive the acknowledgement for a chunk within a reasonable amount of time, it resends the data. 
-
-
-
-
 

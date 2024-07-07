@@ -33,13 +33,13 @@ Wait time for re-transmission
 #define WAIT_TIME 0.1
 
 typedef struct {
-  int seqNum;
-  char data[CHUNK_SIZE + 1];
-  bool kill;
+    int seqNum;
+    char data[CHUNK_SIZE + 1];
+    bool kill;
 } Packet;
 
 typedef struct {
-  int seqNum;
+    int seqNum;
 } ACK;
 
 typedef enum { ackSuccess, ackFail, notSent } status;

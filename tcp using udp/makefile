@@ -1,5 +1,5 @@
 CFLAGS = -fsanitize=address,undefined -Wall -Werror
-UTILFILES = receive.c send.c
+UTILFILES = receive.c send.c networking_utils.c
 
 main: UDP
 	
