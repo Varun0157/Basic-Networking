@@ -21,7 +21,7 @@ In another, run the client
 Replace `tcp` with `udp` in the above steps for the udp implementation. 
 
 ### Implementation 
-Steps are abstracted greatly to break up the functioning into concrete steps. For example, the main of TCP_Client is, roughly:
+Steps are abstracted greatly to break up the functioning into concrete steps. For example, the `main` function of TCP_Client is, roughly:
 ```
 sock = createSocket()
 addr = getAddress(ip, port)
@@ -32,7 +32,7 @@ receiveMessageFromServer(sock)
 closeSocket(sock)
 ```
 
-The code for `tcp` and `udp` are contained in the directories of the same name. `x_utils.c` contains functionality common to both the client and the server (sending and receiving messages, creating sockets, etc.). 
+The code for `tcp` and `udp` are contained in the directories of the same name. `tdp_utils.c` and `udp_utils.c` contain functionality common to both the client and the server (sending and receiving messages, creating sockets, etc.). 
 
 `utils` in the main folder contains functionality common to both tcp and udp: getting port data from the command line, getting the address struct from the ip and port, etc. 
 
